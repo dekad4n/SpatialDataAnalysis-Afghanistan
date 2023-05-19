@@ -1,1 +1,84 @@
-Where all codes will be in.
+
+**Introduction to Afghanistan War**
+
+The Afghanistan War refers to the conflict that began in 2001, following the September 11 attacks on the United States. It involved a military intervention by a coalition of international forces, primarily led by the United States, in response to the Taliban regime's support for the terrorist group Al-Qaeda.
+
+The war had its roots in the Soviet-Afghan War of the 1980s, during which the United States and other countries provided support to Afghan resistance groups known as the Mujahideen. After the Soviet withdrawal in 1989, Afghanistan plunged into a state of civil war and eventually came under the control of the Taliban, an extremist Islamist group.
+
+The September 11 attacks, orchestrated by Al-Qaeda, prompted the United States to demand that the Taliban hand over Osama bin Laden, the leader of Al-Qaeda who was believed to be hiding in Afghanistan. When the Taliban refused to comply, a military operation known as Operation Enduring Freedom was launched on October 7, 2001.
+
+The initial phase of the war involved a massive air campaign targeting Taliban and Al-Qaeda strongholds. Special Operations forces were deployed alongside Afghan opposition groups known as the Northern Alliance, who fought against the Taliban on the ground. The Taliban regime was swiftly toppled, and a new Afghan government was established with Hamid Karzai as its interim leader.
+
+However, the war soon evolved into a protracted conflict, as the Taliban regrouped and launched an insurgency against the Afghan government and international forces. The focus shifted from a mission of eliminating Al-Qaeda and the Taliban to nation-building and stabilizing Afghanistan.
+
+Over the years, the conflict has been marked by a complex web of insurgent attacks, suicide bombings, and clashes between various armed groups. The war has also witnessed the rise of other militant factions, such as the Islamic State of Iraq and Syria (ISIS), further complicating the situation.
+
+The war has had a significant impact on Afghanistan, resulting in thousands of civilian and military casualties, widespread displacement, and extensive damage to infrastructure. International efforts to rebuild Afghanistan and establish a functioning democratic government have faced numerous challenges, including corruption, ethnic tensions, and the resilience of insurgent groups.
+
+In our project, we will analyze different aspects of Afghanistan war, with classifying events as before the actual war and during the actual war. Unfortunately, we do not have any data before 2017.
+
+**Overview to Data**
+
+Firstly, ACLED gives us a data in which Afghanistan's conflicts are visible. Lets look at this data to understand the war better.
+
+```{r}
+library(here) # requires here library installation
+afghanistan_conflicts <- read.csv(here("data", "afghanistan.csv"))
+```
+
+// explain event columns
+
+```{r}
+library(dplyr) # requires dplyr library installation
+afghanistan_conflicts %>% select(matches("event*"))
+```
+
+// a helper function to inspect columns
+
+```{r}
+summarise_col_value <- function(grouped_df)
+{
+  conf_gby_col <- grouped_df %>% summarize(count=n()) %>% mutate(percentage = count/ sum(count) * 100) %>% arrange(desc(percentage))
+  return(conf_gby_col)
+}
+```
+
+```{r}
+event_type_gby <- summarise_col_value(afghanistan_conflicts %>% group_by(event_type))
+```
+
+// explain actor columns
+
+```{r}
+afghanistan_conflicts %>% select(contains("actor"))
+```
+
+```{}
+```
+
+// Introduce actors
+
+```{r}
+conf_gby_actor1 <- summarise_col_value(afghanistan_conflicts %>% group_by(actor1))
+conf_gby_assoc_actor_1 <- summarise_col_value(afghanistan_conflicts %>% group_by(assoc_actor_1))
+conf_gby_actor2 <- summarise_col_value(afghanistan_conflicts %>% group_by(actor2))
+conf_gby_assoc_actor_2 <- summarise_col_value(afghanistan_conflicts %>% group_by(assoc_actor_2))
+conf_gby_actor1
+conf_gby_actor2
+conf_gby_assoc_actor_1
+conf_gby_assoc_actor_2
+```
+
+```{r}
+library(sf) # requires sf library installation
+afghanistan_shp <- st_read(here("data", "shape", "AFG_adm0.shp"))
+plot(afghanistan_shp[,"ISO"])
+```
+
+```{r}
+library(raster) # requires raster package installation
+elevation_afg <- raster(here("data", "elevation.tif"))
+afghanistan_extent <- extent(60, 75, 29, 39)
+elevation_afg <- crop(elevation, afghanistan_extent)
+plot(elevation_afg)
+```
