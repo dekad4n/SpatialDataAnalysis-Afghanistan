@@ -10,6 +10,7 @@ The structure will look like:<br/>
 {{PROJ_PATH}}/data/afghanistan.csv <br/>
 {{PROJ_PATH}}/data/elevation.tif <br/>
 <br/>
-**Important notes**
+<br/>
+**Important notes** <br/>
 Open every file with here library. <br/>
 Install raster, sf, tidyverse, here, sp beforehand. <br/>
