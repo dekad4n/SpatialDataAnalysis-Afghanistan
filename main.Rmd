@@ -1,4 +1,3 @@
-
 **Introduction to Afghanistan War**
 
 The Afghanistan War refers to the conflict that began in 2001, following the September 11 attacks on the United States. It involved a military intervention by a coalition of international forces, primarily led by the United States, in response to the Taliban regime's support for the terrorist group Al-Qaeda.
@@ -26,6 +25,12 @@ library(here) # requires here library installation
 afghanistan_conflicts <- read.csv(here("data", "afghanistan.csv"))
 ```
 
+// explain all cols
+
+```{r}
+colnames(afghanistan_conflicts)
+```
+
 // explain event columns
 
 ```{r}
@@ -44,7 +49,16 @@ summarise_col_value <- function(grouped_df)
 ```
 
 ```{r}
-event_type_gby <- summarise_col_value(afghanistan_conflicts %>% group_by(event_type))
+event_type_gby <- afghanistan_conflicts %>% group_by(event_type)
+event_type_gby_sm <- summarise_col_value(event_type_gby)
+event_type_gby_sm
+```
+
+```{r}
+event_subtype_gby <- afghanistan_conflicts %>% group_by(	
+sub_event_type)
+event_subtype_gby_sm <- summarise_col_value(event_subtype_gby)
+event_subtype_gby
 ```
 
 // explain actor columns
@@ -53,20 +67,49 @@ event_type_gby <- summarise_col_value(afghanistan_conflicts %>% group_by(event_t
 afghanistan_conflicts %>% select(contains("actor"))
 ```
 
-```{}
-```
-
 // Introduce actors
 
 ```{r}
-conf_gby_actor1 <- summarise_col_value(afghanistan_conflicts %>% group_by(actor1))
+gby_act_1 <- afghanistan_conflicts %>% group_by(actor1)
+conf_gby_actor1 <- summarise_col_value(gby_act_1)
 conf_gby_assoc_actor_1 <- summarise_col_value(afghanistan_conflicts %>% group_by(assoc_actor_1))
-conf_gby_actor2 <- summarise_col_value(afghanistan_conflicts %>% group_by(actor2))
+gby_act_2 <- afghanistan_conflicts %>% group_by(actor2)
+conf_gby_actor2 <- summarise_col_value(gby_act_2)
 conf_gby_assoc_actor_2 <- summarise_col_value(afghanistan_conflicts %>% group_by(assoc_actor_2))
 conf_gby_actor1
 conf_gby_actor2
 conf_gby_assoc_actor_1
 conf_gby_assoc_actor_2
+```
+
+```{r}
+joined_actors <- left_join(gby_act_1, gby_act_2, by = c("actor1", "actor2"))
+```
+
+// fatalities
+
+```{r}
+afghanistan_conflicts %>% summarize(avg_fatalities = mean(fatalities), max_fatality = max(fatalities), min_fatality = min(fatalities), standard_dev_fatalities= sd(fatalities), quantile(fatalities, probs=c(0.25, 0.50, 0.75, 0.9)))
+```
+
+// avg fatalities in event types
+
+```{r}
+event_type_gby %>% summarize(count = n(), avg_fatality = mean(fatalities)) %>% filter(count > 1) %>% arrange(desc(avg_fatality))
+```
+
+// avg fatality of sub eventtypes
+
+```{r}
+event_subtype_gby %>% summarize(count = n(), avg_fatality = mean(fatalities)) %>% filter(count > 1) %>% arrange(desc(avg_fatality))
+```
+
+// avg fatality of actor groups that have more than 1 actions
+
+// en kanlı gruplar
+
+```{r}
+gby_act_1 %>% summarize(count = n(),avg_fatality = mean(fatalities)) %>% filter(count>1) %>% arrange(desc(avg_fatality))
 ```
 
 ```{r}
