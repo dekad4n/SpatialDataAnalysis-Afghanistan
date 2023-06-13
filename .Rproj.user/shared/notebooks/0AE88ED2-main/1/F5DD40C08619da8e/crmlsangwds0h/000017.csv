@@ -1,0 +1,5 @@
+"0","library(raster) # requires raster package installation"
+"0","elevation_afg <- raster(here(""data"", ""elevation.tif""))"
+"0","afghanistan_extent <- extent(60, 75, 29, 39)"
+"0","elevation_afg <- crop(elevation_afg, afghanistan_extent)"
+"0","plot(elevation_afg)"

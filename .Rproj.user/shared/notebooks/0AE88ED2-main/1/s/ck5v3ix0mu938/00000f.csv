@@ -1,0 +1,22 @@
+"0","library(rnaturalearth)"
+"0","library(sf)"
+"0","library(dplyr)"
+"0",""
+"0","# Download the shapefile for all countries"
+"0","world_shp <- ne_download(scale = ""large"", type = ""admin_1_states_provinces"", returnclass = ""sf"")"
+"2","trying URL 'https://naturalearth.s3.amazonaws.com/10m_cultural/ne_10m_admin_1_states_provinces.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 14909524 bytes (14.2 MB)
+"
+"2","downloaded 14.2 MB
+
+"
+"0","# Filter the shapefile for Afghanistan"
+"0","afghanistan_shp <- world_shp %>% filter(admin == ""Afghanistan"")"
+"0",""
+"0","# Merge data with shapefile based on admin1 column"
+"0","merged_data <- merge(afghanistan_shp, afghanistan_conflicts, by.x = ""name"", by.y = ""admin1"")"
+"2","Error in merge.sf(afghanistan_shp, afghanistan_conflicts, by.x = ""name"",  : 
+  merge on two sf objects not supported
+"

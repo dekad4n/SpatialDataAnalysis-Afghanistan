@@ -1,0 +1,4 @@
+"0","library(here) # requires here library installation"
+"2","here() starts at D:/RProjs/Afghanistan-Project
+"
+"0","afghanistan_conflicts <- read.csv(here(""data"", ""afghanistan.csv""))"

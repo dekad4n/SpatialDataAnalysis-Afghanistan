@@ -1,0 +1,62 @@
+"0","library(sf)"
+"0","library(sfnetworks)"
+"0","library(here)"
+"0","library(tidyverse)"
+"0",""
+"0","# Read the shapefile"
+"0","afghanistan_shp <- st_read(here(""data"", ""shape"", ""AFG_adm0.shp""))"
+"1","Reading layer `"
+"1","AFG_adm0"
+"1","' from data source "
+"1","
+"
+"1","  "
+"1","`"
+"1","D:\RProjs\Afghanistan-Project\data\shape\AFG_adm0.shp"
+"1","' "
+"1","using driver `"
+"1","ESRI Shapefile"
+"1","'"
+"1","
+"
+"1","Simple feature collection with 1 feature and 67 fields"
+"1","
+"
+"1","Geometry type: POLYGON
+"
+"1","Dimension:     XY
+"
+"1","Bounding box:  "
+"1","xmin: 60.50487 ymin: 29.36157 xmax: 74.89413 ymax: 38.49092"
+"1","
+"
+"1","Geodetic CRS:  WGS 84
+"
+"0","# Convert to suitable projected CRS"
+"0","afghanistan_shp <- st_transform(afghanistan_shp, ""+proj=utm +zone=42 +datum=WGS84"")"
+"0",""
+"0","# Convert to POINT geometries"
+"0","afghanistan_conflicts <- st_as_sf(afghanistan_conflicts, coords = c(""longitude"", ""latitude""), crs = st_crs(afghanistan_shp))"
+"0",""
+"0","# Create sfnetwork object"
+"0","afghanistan_network <- sfnetwork(afghanistan_conflicts)"
+"2","Checking if spatial network structure is valid...
+"
+"2","Spatial network structure is valid
+"
+"0","# Activate nodes and calculate degree centrality"
+"0","afghanistan_nodes <- afghanistan_network %>% activate(""nodes"")"
+"0","afghanistan_nodes <- afghanistan_nodes %>% mutate(degree = centrality_degree())"
+"0",""
+"0","# Activate edges and calculate betweenness centrality"
+"0","afghanistan_edges <- afghanistan_network %>% activate(""edges"")"
+"0","afghanistan_edges <- afghanistan_edges %>% mutate(betweenness = centrality_betweenness())"
+"1","[1m[33mError[39m in `mutate()`:[22m
+[38;5;253m[36mℹ[38;5;253m In argument: `betweenness = centrality_betweenness()`.[39m
+[1mCaused by error in `expect_nodes()`:[22m
+[38;5;253m[33m![38;5;253m This call requires nodes to be active[39m
+Backtrace:
+[90m  1. [39mafghanistan_edges %>% mutate(betweenness = centrality_betweenness())
+[90m 12. [39m[1mtidygraph[22m::centrality_betweenness()
+[90m 13. [39m[1m[94mtidygraph:::expect_nodes([39m[22m[1m[94m)[39m[22m
+"

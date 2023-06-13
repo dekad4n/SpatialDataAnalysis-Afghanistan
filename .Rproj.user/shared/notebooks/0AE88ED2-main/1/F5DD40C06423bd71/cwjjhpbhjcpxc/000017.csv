@@ -1,0 +1,7 @@
+"0","gby_act_1 <- afghanistan_conflicts %>% group_by(actor1)"
+"0","conf_gby_actor1 <- summarise_col_value(gby_act_1)"
+"0","conf_gby_assoc_actor_1 <- summarise_col_value(afghanistan_conflicts %>% group_by(assoc_actor_1))"
+"0","gby_act_2 <- afghanistan_conflicts %>% group_by(actor2)"
+"0","conf_gby_actor2 <- summarise_col_value(gby_act_2)"
+"0","conf_gby_assoc_actor_2 <- summarise_col_value(afghanistan_conflicts %>% group_by(assoc_actor_2))"
+"0","conf_gby_actor1"

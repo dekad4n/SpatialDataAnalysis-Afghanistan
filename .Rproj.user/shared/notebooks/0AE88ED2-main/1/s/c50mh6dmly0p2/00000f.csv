@@ -1,0 +1,35 @@
+"0","net %>% "
+"0","  arrange(desc(degree))"
+"1","[38;5;246m# A tbl_graph: 54 nodes and 66 edges
+[39m"
+"1","[38;5;246m#
+[39m"
+"1","[38;5;246m# An undirected simple graph with 1 component
+[39m"
+"1","[38;5;246m#
+[39m"
+"1","[38;5;246m# Node Data: 54 × 2 (active)[39m
+  name                                   degree
+  [3m[38;5;246m<chr>[39m[23m                                   [3m[38;5;246m<dbl>[39m[23m
+[38;5;250m1[39m Civilians (Afghanistan)                    42
+[38;5;250m2[39m Protesters (Afghanistan)                    8
+[38;5;250m3[39m Military Forces of Afghanistan (2021-)      7
+[38;5;250m4[39m Unidentified Armed Group (Afghanistan)      7
+[38;5;250m5[39m Taliban                                     4
+[38;5;250m6[39m Civilians (United States)                   3
+[38;5;246m# … with 48 more rows[39m"
+"1",""
+"1","
+"
+"1","[38;5;246m#
+[39m"
+"1","[38;5;246m# Edge Data: 66 × 3[39m
+   from    to total_fatalities
+  [3m[38;5;246m<int>[39m[23m [3m[38;5;246m<int>[39m[23m            [3m[38;5;246m<int>[39m[23m
+[38;5;250m1[39m     1    19               65
+[38;5;250m2[39m     1     8                1
+[38;5;250m3[39m     6     8                0
+[38;5;246m# … with 63 more rows[39m"
+"1",""
+"1","
+"

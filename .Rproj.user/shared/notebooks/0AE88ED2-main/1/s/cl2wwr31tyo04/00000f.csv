@@ -1,0 +1,176 @@
+"0","library(here) # requires here library installation"
+"2","here() starts at D:/RProjs/Afghanistan-Project
+"
+"0","library(dplyr) # requires dplyr library installation"
+"2","
+Attaching package: ‘dplyr’
+
+"
+"2","The following objects are masked from ‘package:raster’:
+
+    intersect, select, union
+
+"
+"2","The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+"
+"2","The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+"
+"0","library(sf) # requires sf library installation"
+"2","Linking to GEOS 3.9.3, GDAL 3.5.2, PROJ 8.2.1; sf_use_s2() is TRUE
+"
+"0","library(sp)"
+"0","library(spatstat)"
+"2","Warning: package ‘spatstat’ was built under R version 4.2.3"
+"2","Loading required package: spatstat.data
+"
+"2","Warning: package ‘spatstat.data’ was built under R version 4.2.3"
+"2","Loading required package: spatstat.geom
+"
+"2","Warning: package ‘spatstat.geom’ was built under R version 4.2.3"
+"2","spatstat.geom 3.2-1
+"
+"2","
+Attaching package: ‘spatstat.geom’
+
+"
+"2","The following objects are masked from ‘package:raster’:
+
+    area, rotate, shift
+
+"
+"2","Loading required package: spatstat.random
+"
+"2","Warning: package ‘spatstat.random’ was built under R version 4.2.3"
+"2","spatstat.random 3.1-5
+"
+"2","Loading required package: spatstat.explore
+"
+"2","Warning: package ‘spatstat.explore’ was built under R version 4.2.3"
+"2","Loading required package: nlme
+"
+"2","
+Attaching package: ‘nlme’
+
+"
+"2","The following object is masked from ‘package:dplyr’:
+
+    collapse
+
+"
+"2","The following object is masked from ‘package:raster’:
+
+    getData
+
+"
+"2","spatstat.explore 3.2-1
+"
+"2","Loading required package: spatstat.model
+"
+"2","Warning: package ‘spatstat.model’ was built under R version 4.2.3"
+"2","Loading required package: rpart
+"
+"2","spatstat.model 3.2-4
+"
+"2","Loading required package: spatstat.linnet
+"
+"2","Warning: package ‘spatstat.linnet’ was built under R version 4.2.3"
+"2","spatstat.linnet 3.1-1
+"
+"2","
+spatstat 3.0-6 
+For an introduction to spatstat, type ‘beginner’ 
+
+"
+"0","library(raster) # requires raster package installation"
+"0","library(sfnetworks)"
+"2","Warning: package ‘sfnetworks’ was built under R version 4.2.3"
+"0","library(tidygraph)"
+"2","Warning: package ‘tidygraph’ was built under R version 4.2.3"
+"2","
+Attaching package: ‘tidygraph’
+
+"
+"2","The following object is masked from ‘package:raster’:
+
+    select
+
+"
+"2","The following object is masked from ‘package:stats’:
+
+    filter
+
+"
+"0","library(ggraph)"
+"2","Warning: package ‘ggraph’ was built under R version 4.2.3"
+"2","Loading required package: ggplot2
+"
+"2","
+Attaching package: ‘ggraph’
+
+"
+"2","The following object is masked from ‘package:spatstat.geom’:
+
+    square
+
+"
+"2","The following object is masked from ‘package:sp’:
+
+    geometry
+
+"
+"0","library(ggplot2)"
+"0","library(corrplot)"
+"2","Warning: package ‘corrplot’ was built under R version 4.2.3"
+"2","corrplot 0.92 loaded
+"
+"0","library(rnaturalearth)"
+"2","Warning: package ‘rnaturalearth’ was built under R version 4.2.3"
+"2","Support for Spatial objects (`sp`) will be deprecated in {rnaturalearth} and will be removed in a future release of the package. Please use `sf` objects with {rnaturalearth}. For example: `ne_download(returnclass = 'sf')`
+"
+"0","library(tidyr)"
+"2","
+Attaching package: ‘tidyr’
+
+"
+"2","The following object is masked from ‘package:raster’:
+
+    extract
+
+"
+"0","install.packages(""rnaturalearthdata"")"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/4.2/rnaturalearthdata_0.1.0.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 3237700 bytes (3.1 MB)
+"
+"2","downloaded 3.1 MB
+
+"
+"1","package ‘rnaturalearthdata’ successfully unpacked and MD5 sums checked
+"
+"1","
+"
+"1",""
+"1","The downloaded binary packages are in
+	C:\Users\Sadi\AppData\Local\Temp\RtmpiCUeLL\downloaded_packages"
+"1",""
+"1","
+"
+"0","library(rnaturalearthdata)"
+"2","Warning: package ‘rnaturalearthdata’ was built under R version 4.2.3"
+"2","
+Attaching package: ‘rnaturalearthdata’
+
+"
+"2","The following object is masked from ‘package:rnaturalearth’:
+
+    countries110
+
+"
+"0","#library(viridis)"

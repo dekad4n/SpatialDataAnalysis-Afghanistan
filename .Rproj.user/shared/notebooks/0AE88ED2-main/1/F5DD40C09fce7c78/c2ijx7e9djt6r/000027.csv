@@ -1,0 +1,20 @@
+"0","gby_act_1 <- civilian_targeting %>% group_by(actor1)"
+"0","conf_gby_actor1 <- summarise_col_value(gby_act_1)"
+"0","conf_gby_assoc_actor_1 <- summarise_col_value(civilian_targeting %>% group_by(assoc_actor_1))"
+"0","gby_act_2 <- afghanistan_conflicts %>% group_by(actor2)"
+"0","conf_gby_actor2 <- summarise_col_value(gby_act_2)"
+"0","conf_gby_assoc_actor_2 <- summarise_col_value(civilian_targeting %>% group_by(assoc_actor_2))"
+"0","conf_gby_actor1"
+"1","Simple feature collection with 43 features and 3 fields"
+"1","
+"
+"1","Geometry type: GEOMETRY
+"
+"1","Dimension:     XY
+"
+"1","Bounding box:  "
+"1","xmin: 61.0667 ymin: 30.1833 xmax: 71.6002 ymax: 38.4435"
+"1","
+"
+"1","CRS:           NA
+"

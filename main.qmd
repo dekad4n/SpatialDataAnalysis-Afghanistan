@@ -1,0 +1,975 @@
+**Introduction to Afghanistan War**
+
+The Afghanistan War refers to the conflict that began in 2001, following the September 11 attacks on the United States. It involved a military intervention by a coalition of international forces, primarily led by the United States, in response to the Taliban regime's support for the terrorist group Al-Qaeda.
+
+The war had its roots in the Soviet-Afghan War of the 1980s, during which the United States and other countries provided support to Afghan resistance groups known as the Mujahideen. After the Soviet withdrawal in 1989, Afghanistan plunged into a state of civil war and eventually came under the control of the Taliban, an extremist Islamist group.
+
+The September 11 attacks, orchestrated by Al-Qaeda, prompted the United States to demand that the Taliban hand over Osama bin Laden, the leader of Al-Qaeda who was believed to be hiding in Afghanistan. When the Taliban refused to comply, a military operation known as Operation Enduring Freedom was launched on October 7, 2001.
+
+The initial phase of the war involved a massive air campaign targeting Taliban and Al-Qaeda strongholds. Special Operations forces were deployed alongside Afghan opposition groups known as the Northern Alliance, who fought against the Taliban on the ground. The Taliban regime was swiftly toppled, and a new Afghan government was established with Hamid Karzai as its interim leader.
+
+However, the war soon evolved into a protracted conflict, as the Taliban regrouped and launched an insurgency against the Afghan government and international forces. The focus shifted from a mission of eliminating Al-Qaeda and the Taliban to nation-building and stabilizing Afghanistan.
+
+Over the years, the conflict has been marked by a complex web of insurgent attacks, suicide bombings, and clashes between various armed groups. The war has also witnessed the rise of other militant factions, such as the Islamic State of Iraq and Syria (ISIS), further complicating the situation.
+
+The war has had a significant impact on Afghanistan, resulting in thousands of civilian and military casualties, widespread displacement, and extensive damage to infrastructure. International efforts to rebuild Afghanistan and establish a functioning democratic government have faced numerous challenges, including corruption, ethnic tensions, and the resilience of insurgent groups.
+
+In our project, we will analyze different aspects of Afghanistan war, with classifying events as before the actual war and during the actual war. Unfortunately, we do not have any data before 2017.
+
+**The Problem**
+
+In our project, we will analyze civilian targeting before and after US troops withdrawal from Afghanistan. The goals are:
+
+-   Finding if US troops' withdrawal affected civilian targeting number.
+
+-   Finding if US troop's withdrawal affected civilian targeting fatalities.
+
+In our project, we will summarize values of overall data, civilian targeting data before and after 2021, kernel density estimation and spatial autocorrelation analysis for both aspects. These methods will contain graphs and plots.
+
+Project will probably result in increased number of civilian targeting.
+
+The hypothesis is civilian targeting is increased in any aspect after US' troops withdrawal.
+
+**Development Environment Setup**
+
+```{r}
+library(here) # requires here library installation
+library(dplyr) # requires dplyr library installation
+library(sf) # requires sf library installation
+library(sp)
+library(spatstat)
+library(raster) # requires raster package installation
+library(sfnetworks)
+library(tidygraph)
+library(ggraph)
+library(ggplot2)
+library(corrplot)
+library(rnaturalearth)
+library(tidyr)
+install.packages("rnaturalearthdata")
+library(rnaturalearthdata)
+library(spdep)
+#library(viridis)
+```
+
+**Overview to Data**
+
+Firstly, ACLED gives us a data in which Afghanistan's conflicts are visible. Lets look at this data to understand the war better.
+
+```{r}
+afghanistan_conflicts <- read.csv(here("data", "afghanistan.csv"))
+afghanistan_conflicts
+```
+
+In our Acled Data, we have many columns. Event date, year, event type, actors, districts, location, source and timestamp. We will analyze most of these columns' effect to civilian targeting before and after 2021 May.
+
+```{r}
+colnames(afghanistan_conflicts)
+```
+
+Before analyzing all the data, we wanted to see if there is **any** civilian targeting and see the mean of fatality it. We have 6632 civilian targeting events before and after 2021, overall.
+
+```{r}
+civilian_targeting <- afghanistan_conflicts %>% filter(civilian_targeting != "")
+
+civilian_targeting %>% summarize(count = n(), mean_fatalities = mean(fatalities))
+```
+
+```{r}
+# Download the shapefile for all countries
+world_shp <- ne_download(scale = "large", type = "admin_1_states_provinces", returnclass = "sf")
+```
+
+```{r}
+before_2021_a_c <- afghanistan_conflicts %>% filter(timestamp <= 1619859600)
+after_2021_a_c <- afghanistan_conflicts %>% filter(timestamp > 1619859600)
+```
+
+```{r}
+afghanistan_shp <- world_shp %>% filter(admin == "Afghanistan")
+afghanistan_shp <- afghanistan_shp %>% select("name", "geometry")
+afghanistan_shp
+```
+
+```{r}
+
+afghanistan_df <- st_as_sf(afghanistan_shp)
+
+# Convert to spatial points dataframe
+afghanistan_conflicts <- st_as_sf(afghanistan_conflicts, coords = c("longitude", "latitude"))
+
+# Set CRS for afghanistan_conflicts to match afghanistan_df
+st_crs(afghanistan_conflicts) <- st_crs(afghanistan_df)
+
+# Merge data with the shapefile based on admin1 column
+merged_data <- st_join(afghanistan_df, afghanistan_conflicts, join = st_intersects)
+
+# Calculate the average civilian targeting for each administrative boundary
+averages <- merged_data %>%
+  group_by(name) %>%
+  mutate(civilian_targeting = ifelse(civilian_targeting == "Civilian targeting", 1, 0)) %>%
+  summarize(avg_civilian_targeting = mean(civilian_targeting))
+
+afghanistan_df <- as.data.frame(afghanistan_df)
+
+# Merge the averages data back into the spatial data
+afghanistan_df <- merge(afghanistan_df, averages, by = "name")
+
+# Convert back to a spatial object
+afghanistan_df <- st_as_sf(afghanistan_df)
+```
+
+```{r}
+after_2021
+```
+
+```{r}
+# Convert before_2021 to an sf object and assign CRS
+before_2021_sf <- st_as_sf(before_2021, coords = c("longitude", "latitude"), crs = 4326)
+
+# Transform before_2021 to match CRS of afghanistan_df
+before_2021_transformed <- st_transform(before_2021_sf, st_crs(afghanistan_df))
+# Convert before_2021 to an sf object and assign CRS
+after_2021_sf <- st_as_sf(after_2021, coords = c("longitude", "latitude"), crs = 4326)
+
+# Transform before_2021 to match CRS of afghanistan_df
+after_2021_transformed <- st_transform(after_2021_sf, st_crs(afghanistan_df))
+
+# Plot
+ggplot() +
+  geom_sf(data = afghanistan_df, fill = "lightgrey") +
+  geom_sf(data = before_2021_transformed, aes=color="red", size = 1) +
+  geom_sf(data=after_2021_transformed, aes=(color="blue"), size = 1)
+  theme_minimal() +
+  labs(title = "Civilian Targeting in Afghanistan Before & After 2021",
+       x = "Longitude",
+       y = "Latitude")
+
+
+```
+
+```{r}
+
+before_2021_transformed$coords <- st_coordinates(before_2021_transformed)
+
+# Calculate counts for each location
+incident_counts <- before_2021_transformed %>%
+  group_by(coords) %>%
+  summarise(count = n(), .groups = 'drop')
+
+# Join counts back to the original data
+before_2021_transformed <- st_join(before_2021_transformed, incident_counts, by = "coords")
+
+after_2021_transformed$coords <- st_coordinates(after_2021_transformed)
+# Calculate counts for each location
+incident_counts_a <- after_2021_transformed %>%
+  group_by(coords) %>%
+  summarise(count = n(), .groups = 'drop')
+
+# Join counts back to the original data
+after_2021_transformed <- st_join(after_2021_transformed, incident_counts_a, by = "coords")
+
+
+# Plot
+ggplot() +
+  geom_sf(data = afghanistan_df, fill = "lightgrey") +
+  geom_sf(data = before_2021_transformed, aes(size = count, color = "red")) +
+  geom_sf(data = after_2021_transformed, aes(size = count, color= "blue")) +
+  scale_size_continuous(range = c(1, 10)) +
+  labs(title = "Civilian Targeting in Afghanistan Before & after 2021",
+       x = "Longitude",
+       y = "Latitude",
+       size = "Incident Count")
+
+
+```
+
+```{r}
+before_2021_transformed$coords <- st_coordinates(before_2021_transformed)
+
+# Calculate counts for each location
+incident_counts <- before_2021_transformed %>%
+  group_by(coords) %>%
+  summarise(count = mean(fatalities), .groups = 'drop')
+
+# Join counts back to the original data
+before_2021_transformed <- st_join(before_2021_transformed, incident_counts, by = "coords")
+
+after_2021_transformed$coords <- st_coordinates(after_2021_transformed)
+# Calculate counts for each location
+incident_counts_a <- after_2021_transformed %>%
+  group_by(coords) %>%
+  summarise(count = mean(fatalities), .groups = 'drop')
+
+# Join counts back to the original data
+after_2021_transformed <- st_join(after_2021_transformed, incident_counts_a, by = "coords")
+
+
+# Plot
+ggplot() +
+  geom_sf(data = afghanistan_df, fill = "lightgrey") +
+  geom_sf(data = before_2021_transformed, aes(size = count, color = "red")) +
+  geom_sf(data = after_2021_transformed, aes(size = count, color= "blue")) +
+  scale_size_continuous(range = c(1, 10)) +
+  labs(title = "Civilian Targeting in Afghanistan Before & after 2021",
+       x = "Longitude",
+       y = "Latitude",
+       size = "Incident Count")
+```
+
+```{r}
+
+# Create the color scale based on avg_civilian_targeting
+color_breaks <- classInt::classIntervals(afghanistan_df$avg_civilian_targeting, n = 10, style = "quantile")$brks
+colormap <- colorRampPalette(c("green", "red"))(length(color_breaks) - 1)
+color_scale <- cut(afghanistan_df$avg_civilian_targeting, breaks = color_breaks, include.lowest = TRUE, labels = colormap)
+
+# Plot the map
+plot(afghanistan_df["avg_civilian_targeting"], col = colormap, main = "Civilian Targeting")
+
+legend("bottomright", legend = c("low", "high"), fill = c("green", "red"), title = "Civilian Targeting")
+```
+
+```{r}
+afghanistan_df <- st_as_sf(afghanistan_shp)
+
+# Convert to spatial points dataframe
+after_2021_sp <- st_as_sf(after_2021_a_c, coords = c("longitude", "latitude"))
+
+# Set CRS for afghanistan_conflicts to match afghanistan_df
+st_crs(after_2021_sp) <- st_crs(afghanistan_df)
+
+# Merge data with the shapefile based on admin1 column
+merged_data_a <- st_join(afghanistan_df, after_2021_sp, join = st_intersects)
+
+# Calculate the average civilian targeting for each administrative boundary
+averages <- merged_data_a %>%
+  group_by(name) %>%
+  mutate(civilian_targeting = ifelse(civilian_targeting == "Civilian targeting", 1, 0)) %>%
+  summarize(avg_civilian_targeting = mean(civilian_targeting))
+
+afghanistan_df_a <- as.data.frame(afghanistan_df)
+
+# Merge the averages data back into the spatial data
+afghanistan_df_a <- merge(afghanistan_df_a, averages, by = "name")
+
+# Convert back to a spatial object
+afghanistan_df_a <- st_as_sf(afghanistan_df_a)
+```
+
+```{r}
+# Create the color scale based on avg_civilian_targeting
+color_breaks <- classInt::classIntervals(afghanistan_df_a$avg_civilian_targeting, n = 10, style = "quantile")$brks
+colormap <- colorRampPalette(c("green", "red"))(length(color_breaks) - 1)
+color_scale <- cut(afghanistan_df_a$avg_civilian_targeting, breaks = color_breaks, include.lowest = TRUE, labels = colormap)
+
+# Plot the map
+plot(afghanistan_df_a["avg_civilian_targeting"], col = colormap, main = "Civilian Targeting")
+
+legend("bottomright", legend = c("low", "high"), fill = c("green", "red"), title = "Civilian Targeting")
+```
+
+```{r}
+afghanistan_df <- st_as_sf(afghanistan_shp)
+
+# Convert to spatial points dataframe
+before_2021_sp <- st_as_sf(before_2021_a_c, coords = c("longitude", "latitude"))
+
+# Set CRS for afghanistan_conflicts to match afghanistan_df
+st_crs(before_2021_sp) <- st_crs(afghanistan_df)
+
+# Merge data with the shapefile based on admin1 column
+merged_data_b <- st_join(afghanistan_df, before_2021_sp, join = st_intersects)
+
+# Calculate the average civilian targeting for each administrative boundary
+averages <- merged_data %>%
+  group_by(name) %>%
+  mutate(civilian_targeting = ifelse(civilian_targeting == "Civilian targeting", 1, 0)) %>%
+  summarize(avg_civilian_targeting = mean(civilian_targeting))
+
+afghanistan_df_b <- as.data.frame(afghanistan_df)
+
+# Merge the averages data back into the spatial data
+afghanistan_df_b <- merge(afghanistan_df_b, averages, by = "name")
+
+# Convert back to a spatial object
+afghanistan_df_b <- st_as_sf(afghanistan_df_b)
+```
+
+```{r}
+# Create the color scale based on avg_civilian_targeting
+color_breaks <- classInt::classIntervals(afghanistan_df_b$avg_civilian_targeting, n = 20, style = "quantile")$brks
+colormap <- colorRampPalette(c("green", "red"))(length(color_breaks) - 1)
+color_scale <- cut(afghanistan_df_b$avg_civilian_targeting, breaks = color_breaks, include.lowest = TRUE, labels = colormap)
+
+# Plot the map
+plot(afghanistan_df_b["avg_civilian_targeting"], col = colormap, main = "Civilian Targeting")
+
+legend("bottomright", legend = c("low", "high"), fill = c("green", "red"), title = "Civilian Targeting")
+```
+
+### Mean Fatalities before and after 2021
+
+Also, we wanted to see if our hypothesis has a chance to be true. To see that, we counted number of civilian targeting events before and after 2021, with their mean fatalities. We see that count is increased with great amount, however, mean fatalities is decreased. This may be caused by event number as well, therefore our hypothesis still continues.
+
+```{r}
+before_2021 <- civilian_targeting %>% filter(timestamp <= 1619859600)
+before_2021 %>% summarize(count = n(), mean_fatalities = mean(fatalities))
+```
+
+```{r}
+after_2021 <- civilian_targeting %>% filter(timestamp > 1619859600)
+after_2021 %>% summarize(count = n(), mean_fatalities = mean(fatalities))
+```
+
+```{r}
+# Calculate civilian targeting counts
+after_2021_counts <- after_2021 %>% 
+  summarise(count = n())
+
+before_2021_counts <- before_2021 %>% 
+  summarise(count = n())
+
+# Combine counts into one data frame
+counts_df <- data.frame(
+  period = c("Before 2021", "After 2021"),
+  count = c(before_2021_counts$count, after_2021_counts$count)
+)
+
+# Create a bar plot
+ggplot(counts_df, aes(x = period, y = count, fill = period)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  labs(x = "Period", y = "Civilian Targeting Counts", fill = "Period") +
+  theme_bw() 
+```
+
+## Analysis with respect to Event
+
+We see that there are 64,972 different events in our data. This data consists of different event columns: one unique identifier, event_id_cnty, event date, event type, sub-event type.
+
+```{r}
+afghanistan_conflicts %>% select(matches("event*"))
+```
+
+Before we start to inspect different columns, we have written a helper function which summarizes a grouped data and sorts them with respect to percentage.
+
+```{r}
+summarise_col_value <- function(grouped_df)
+{
+  conf_gby_col <- grouped_df %>% summarize(count=n()) %>% mutate(percentage = count/ sum(count) * 100) %>% arrange(desc(percentage))
+  return(conf_gby_col)
+}
+```
+
+Firstly, we have grouped civilian targeting events with respect to their event types. We see that in overall, there are 4 event types which results in civilian targeting: Violance agains civilians, explosions/remote violance, protests and riots. We see that violance agains civilians and explosions/remote violance dominates that data set with great number in terms of civilian targeting.
+
+```{r}
+event_type_gby <- civilian_targeting %>% group_by(event_type)
+event_type_gby_sm <- summarise_col_value(event_type_gby)
+event_type_gby_sm
+```
+
+### Event types with respect to time
+
+We already shown that after 2021 we have more civilian targeting. However, our hypothesis have strong defender here. After 2021, civilian targeting is mostly on purpose. After 2021, violance against civilians is dominating event type, but before 2021 explosions dominate civilian targeting. This is an important result for our hypothesis.
+
+```{r}
+event_type_gby_a <- after_2021 %>% group_by(event_type)
+event_type_gby_sm <- summarise_col_value(event_type_gby_a)
+event_type_gby_sm
+```
+
+```{r}
+event_type_gby_b <- before_2021 %>% group_by(event_type)
+event_type_gby_sm <- summarise_col_value(event_type_gby_b)
+event_type_gby_sm
+```
+
+We see that number of events decreases overtime in afghanistan. But does that mean civilian decreased?
+
+```{r}
+event_counts_by_year <- afghanistan_conflicts %>%
+  group_by(year) %>%
+  summarise(count = n()) %>%
+  arrange(year)
+
+event_counts_by_year
+```
+
+Now, it is time to see events by year:
+
+```{r}
+event_counts_by_year %>%
+  ggplot(aes(x = year, y = count)) +
+  geom_line() +
+  labs(x = "Year", y = "Number of Events") +
+  ggtitle("Number of Events in Afghanistan Over Time")
+```
+
+#### Civilian Targeting by Year
+
+```{r}
+event_counts_by_year <- civilian_targeting %>%
+  group_by(year) %>%
+  summarise(count = n()) %>%
+  arrange(year)
+
+event_counts_by_year
+```
+
+Interestingly, we see that there is a decrease after 2021. However, generally every year after 2021 has more civilian targeting than before. The peek points were 2020-2021, when the war ended. However, 2023 still continues, so we may estimate the big increase in civilian targeting.
+
+```{r}
+event_counts_by_year %>%
+  ggplot(aes(x = year, y = count)) +
+  geom_line() +
+  labs(x = "Year", y = "Number of Events") +
+  ggtitle("Number of Civilian Targeting Events in Afghanistan Over Time")
+```
+
+### Event Subtype Analysis
+
+We have seen event types that is about civilian targeting. Now, we are going to analyse subtype events that is about civilian targeting. We are seeing that attacks dominate civilian targeting subtypes, with attack, remote explosive, shelling.
+
+```{r}
+event_subtype_gby <- civilian_targeting %>% group_by(	
+sub_event_type)
+event_subtype_gby_sm <- summarise_col_value(event_subtype_gby)
+event_subtype_gby_sm
+```
+
+#### Event sub-type analysis with respect to time
+
+We see that attacks are mostly after 2021. This shows that civilian targeting was their main aim when doing it. Therefore, one can see that civilian targeting is on purpose.
+
+```{r}
+event_subtype_gby_a <- after_2021 %>% group_by(	
+sub_event_type)
+event_subtype_gby_sm <- summarise_col_value(event_subtype_gby_a)
+event_subtype_gby_sm
+```
+
+// 2021den önce
+
+```{r}
+
+event_subtype_gby_b <- before_2021 %>% group_by(	
+sub_event_type)
+event_subtype_gby_sm <- summarise_col_value(event_subtype_gby_b)
+event_subtype_gby_sm
+```
+
+```{r}
+# Assuming the function summarise_col_value does the summarization and adds a summary_col
+summary_a <- summarise_col_value(event_subtype_gby_a) %>%
+  mutate(Period = "After 2021")  # Add a column to distinguish the periods
+
+summary_b <- summarise_col_value(event_subtype_gby_b) %>%
+  mutate(Period = "Before 2021")  # Add a column to distinguish the periods
+
+# Combine the summaries into one dataframe
+combined_summary <- rbind(summary_a, summary_b)
+
+# Filter for the 5 most common sub_event_types in each period
+top5_summary <- combined_summary %>%
+  group_by(Period) %>%
+  top_n(5, wt = count)
+
+# Plot the data
+ggplot(top5_summary, aes(x = sub_event_type, y = count, fill = Period)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Sub-Event Type", y = "Summary Value") +
+  guides(fill=guide_legend(title="Period")) +
+  ggtitle("Comparison of Sub-Event Types Before and After 2021") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+// explain actor columns
+
+```{r}
+civilian_targeting %>% select(contains("actor"))
+```
+
+// Introduce actors
+
+```{r}
+gby_act_1 <- civilian_targeting %>% group_by(actor1)
+conf_gby_actor1 <- summarise_col_value(gby_act_1)
+conf_gby_assoc_actor_1 <- summarise_col_value(civilian_targeting %>% group_by(assoc_actor_1))
+gby_act_2 <- afghanistan_conflicts %>% group_by(actor2)
+conf_gby_actor2 <- summarise_col_value(gby_act_2)
+conf_gby_assoc_actor_2 <- summarise_col_value(civilian_targeting %>% group_by(assoc_actor_2))
+conf_gby_actor1
+conf_gby_actor2
+conf_gby_assoc_actor_1
+conf_gby_assoc_actor_2
+```
+
+```{r}
+gby_act_1_a <- after_2021 %>% group_by(actor1)
+conf_gby_actor_1_a <- summarise_col_value(gby_act_1_b)
+conf_gby_assoc_actor_1_a <- summarise_col_value(after_2021 %>% group_by(assoc_actor_1))
+gby_act_2_a <- after_2021 %>% group_by(actor2)
+conf_gby_actor2_a <- summarise_col_value(gby_act_2_a)
+conf_gby_assoc_actor_2_a <- summarise_col_value(after_2021 %>% group_by(assoc_actor_2))
+conf_gby_actor1_a
+conf_gby_actor2_a
+conf_gby_assoc_actor_1_a
+conf_gby_assoc_actor_2_a
+```
+
+// b
+
+```{r}
+gby_act_1_b <- before_2021 %>% group_by(actor1)
+conf_gby_actor1_b <- summarise_col_value(gby_act_1_b)
+conf_gby_assoc_actor_1_b <- summarise_col_value(before_2021 %>% group_by(assoc_actor_1))
+gby_act_2_b <- before_2021 %>% group_by(actor2)
+conf_gby_actor2_b <- summarise_col_value(gby_act_2_b)
+conf_gby_assoc_actor_2_b <- summarise_col_value(before_2021 %>% group_by(assoc_actor_2))
+conf_gby_actor1_b
+conf_gby_actor2_b
+conf_gby_assoc_actor_1_b
+conf_gby_assoc_actor_2_b
+```
+
+// fatalities
+
+```{r}
+civilian_targeting %>% summarize(avg_fatalities = mean(fatalities), max_fatality = max(fatalities), min_fatality = min(fatalities), standard_dev_fatalities= sd(fatalities), quantile(fatalities, probs=c(0.25, 0.50, 0.75, 0.9)))
+```
+
+// after 2021
+
+```{r}
+after_2021 %>% summarize(avg_fatalities = mean(fatalities), max_fatality = max(fatalities), min_fatality = min(fatalities), standard_dev_fatalities= sd(fatalities), quantile(fatalities, probs=c(0.25, 0.50, 0.75, 0.9)))
+```
+
+// before 2021
+
+```{r}
+before_2021 %>% summarize(avg_fatalities = mean(fatalities), max_fatality = max(fatalities), min_fatality = min(fatalities), standard_dev_fatalities= sd(fatalities), quantile(fatalities, probs=c(0.25, 0.50, 0.75, 0.9)))
+```
+
+```{r}
+# Calculate the required statistics for both datasets
+summary_after_2021 <- after_2021 %>%
+  summarize(avg_fatalities = mean(fatalities),
+            max_fatality = max(fatalities),
+            standard_dev_fatalities= sd(fatalities),
+            Median = quantile(fatalities, probs=0.5),
+            Q3 = quantile(fatalities, probs=0.75),
+            Q9 = quantile(fatalities, probs=0.9)) %>%
+  mutate(Period = "After 2021")  # Add a column to distinguish the periods
+
+summary_before_2021 <- before_2021 %>%
+  summarize(avg_fatalities = mean(fatalities),
+            max_fatality = max(fatalities),
+            standard_dev_fatalities= sd(fatalities),
+            Median = quantile(fatalities, probs=0.5),
+            Q3 = quantile(fatalities, probs=0.75),
+            Q9 = quantile(fatalities, probs=0.9)) %>%
+  mutate(Period = "Before 2021")  # Add a column to distinguish the periods
+
+# Combine the summaries into one dataframe
+combined_summary <- rbind(summary_after_2021, summary_before_2021)
+
+# Pivot the data to long format for plotting
+long_summary <- combined_summary %>%
+  pivot_longer(cols = -Period,
+               names_to = "Statistic",
+               values_to = "Value")
+
+# Plot the data
+ggplot(long_summary, aes(x = Statistic, y = Value, fill = Period)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Statistic", y = "Value") +
+  guides(fill=guide_legend(title="Period")) +
+  ggtitle("Comparison of Fatality Statistics Before and After 2021") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+// avg fatalities in event types
+
+```{r}
+event_type_gby %>% summarize(count = n(), avg_fatality = mean(fatalities)) %>% filter(count > 1) %>% arrange(desc(avg_fatality))
+```
+
+// 2021
+
+```{r}
+event_type_gby_a %>% summarize(count = n(), avg_fatality = mean(fatalities)) %>% filter(count > 1) %>% arrange(desc(avg_fatality))
+```
+
+// 2021 before
+
+```{r}
+event_type_gby_b %>% summarize(count = n(), avg_fatality = mean(fatalities)) %>% filter(count > 1) %>% arrange(desc(avg_fatality))
+```
+
+```{r}
+war_events <- civilian_targeting %>%
+  filter(year >= 2001)
+
+average_fatalities_by_year <- war_events %>%
+  group_by(year) %>%
+  summarise(avg_fatalities = mean(fatalities))
+
+average_fatalities_by_year
+```
+
+```{r}
+average_fatalities_by_year %>%
+  ggplot(aes(x = year, y = avg_fatalities)) +
+  geom_line() +
+  labs(x = "Year", y = "Average Fatalities") +
+  ggtitle("Average Fatalities in Afghanistan During the Actual War")
+```
+
+// avg fatality of sub eventtypes
+
+```{r}
+event_subtype_gby %>% summarize(count = n(), avg_fatality = mean(fatalities)) %>% filter(count > 1) %>% arrange(desc(avg_fatality))
+```
+
+// 2021 before
+
+```{r}
+event_subtype_gby_a %>% summarize(count = n(), avg_fatality = mean(fatalities)) %>% filter(count > 1) %>% arrange(desc(avg_fatality))
+```
+
+// 2021 bef
+
+```{r}
+event_subtype_gby_b %>% summarize(count = n(), avg_fatality = mean(fatalities)) %>% filter(count > 1) %>% arrange(desc(avg_fatality))
+```
+
+// avg fatality of actor groups that have more than 1 actions
+
+```{r}
+gby_act_1 %>% summarize(count = n(),avg_fatality = mean(fatalities)) %>% filter(count>1) %>% arrange(desc(avg_fatality))
+```
+
+```{r}
+gby_act_1_a %>% summarize(count = n(),avg_fatality = mean(fatalities)) %>% filter(count>1) %>% arrange(desc(avg_fatality))
+```
+
+```{r}
+gby_act_1_b %>% summarize(count = n(),avg_fatality = mean(fatalities)) %>% filter(count>1) %>% arrange(desc(avg_fatality))
+
+```
+
+```{r}
+afghanistan_shp <- st_read(here("data", "shape", "AFG_adm0.shp"))
+plot(afghanistan_shp[,"ISO"])
+```
+
+## Kernel Density Estimation
+
+```{r}
+# Convert to suitable projected CRS
+afghanistan_shp <- st_transform(afghanistan_shp, "+proj=utm +zone=42 +datum=WGS84")
+
+# Convert to spatial points dataframe
+afghanistan_conflicts_sf <- st_as_sf(civilian_targeting, coords = c("longitude", "latitude"))
+
+# Convert to ppp object
+afghanistan_ppp <- as.ppp(afghanistan_conflicts_sf)
+
+# Define the bandwidth parameter for kernel density estimation
+bandwidth_parameter <- 0.2
+
+# Create study window from transformed shapefile
+study_area <- as.owin(afghanistan_shp)
+
+# Perform kernel density estimation
+density_map <- density.ppp(afghanistan_ppp, sigma = bandwidth_parameter, window = study_area)
+
+# Visualize the kernel density estimation
+plot(density_map)
+```
+
+```{r}
+# Convert to suitable projected CRS
+afghanistan_shp <- st_transform(afghanistan_shp, "+proj=utm +zone=42 +datum=WGS84")
+
+# Convert to spatial points dataframe
+afghanistan_conflicts_sf <- st_as_sf(after_2021, coords = c("longitude", "latitude"))
+
+# Convert to ppp object
+afghanistan_ppp <- as.ppp(afghanistan_conflicts_sf)
+
+# Define the bandwidth parameter for kernel density estimation
+bandwidth_parameter <- 0.2
+
+# Create study window from transformed shapefile
+study_area <- as.owin(afghanistan_shp)
+
+# Perform kernel density estimation
+density_map <- density.ppp(afghanistan_ppp, sigma = bandwidth_parameter, window = study_area)
+
+# Visualize the kernel density estimation
+plot(density_map)
+
+```
+
+```{r}
+# Convert to suitable projected CRS
+afghanistan_shp <- st_transform(afghanistan_shp, "+proj=utm +zone=42 +datum=WGS84")
+
+# Convert to spatial points dataframe
+afghanistan_conflicts_sf <- st_as_sf(before_2021, coords = c("longitude", "latitude"))
+
+# Convert to ppp object
+afghanistan_ppp <- as.ppp(afghanistan_conflicts_sf)
+
+# Define the bandwidth parameter for kernel density estimation
+bandwidth_parameter <- 0.2 
+
+# Create study window from transformed shapefile
+study_area <- as.owin(afghanistan_shp)
+
+# Perform kernel density estimation
+density_map <- density.ppp(afghanistan_ppp, sigma = bandwidth_parameter, window = study_area)
+
+# Visualize the kernel density estimation
+plot(density_map)
+
+```
+
+## Spatial Autocorrelation Analysis
+
+```{r}
+# create edge list
+edge_list <- civilian_targeting %>% 
+    select(actor1, actor2, fatalities) %>% 
+    filter(!is.na(actor1) & !is.na(actor2)) %>%
+    group_by(actor1, actor2) %>%
+    summarise(total_fatalities = sum(fatalities))
+net <- as_tbl_graph(edge_list, directed = FALSE)
+# calculate degree centrality
+net <- net %>% 
+  activate(nodes) %>% 
+  mutate(degree = centrality_degree(mode = "in"))
+net %>% 
+  arrange(desc(degree))
+edge_data <- as.data.frame(net, what = "edges")
+# Create a ggraph plot
+g <- ggraph(net, layout = "fr") +
+  geom_edge_link() +
+  geom_node_point() +
+  theme_void()
+
+# Plot the network
+plot(g)
+```
+
+```{r}
+# create edge list
+edge_list <- afghanistan_conflicts %>% filter(timestamp > 1619859600 & civilian_targeting != "")  %>% 
+    select(actor1, actor2, fatalities) %>% 
+    filter(!is.na(actor1) & !is.na(actor2)) %>%
+    group_by(actor1, actor2) %>%
+    summarise(total_fatalities = sum(fatalities))
+net <- as_tbl_graph(edge_list, directed = FALSE)
+# calculate degree centrality
+net <- net %>% 
+  activate(nodes) %>% 
+  mutate(degree = centrality_degree(mode = "in"))
+net %>% 
+  arrange(desc(degree))
+edge_data <- as.data.frame(net, what = "edges")
+# Create a ggraph plot
+g <- ggraph(net, layout = "fr") +
+  geom_edge_link() +
+  geom_node_point() +
+  theme_void()
+
+# Plot the network
+plot(g)
+```
+
+```{r}
+# create edge list
+edge_list <- afghanistan_conflicts  %>% filter(timestamp <= 1619859600 & civilian_targeting != "")  %>% 
+    select(actor1, actor2, fatalities) %>% 
+    filter(!is.na(actor1) & !is.na(actor2)) %>%
+    group_by(actor1, actor2) %>%
+    summarise(total_fatalities = sum(fatalities))
+net <- as_tbl_graph(edge_list, directed = FALSE)
+# calculate degree centrality
+net <- net %>% 
+  activate(nodes) %>% 
+  mutate(degree = centrality_degree(mode = "in"))
+net %>% 
+  arrange(desc(degree))
+edge_data <- as.data.frame(net, what = "edges")
+# Create a ggraph plot
+g <- ggraph(net, layout = "fr") +
+  geom_edge_link() +
+  geom_node_point() +
+  theme_void()
+
+# Plot the network
+plot(g)
+
+```
+
+```{r}
+library(rnaturalearth)
+library(sf)
+library(dplyr)
+
+# Download the shapefile for all countries
+world_shp <- ne_download(scale = "large", type = "admin_1_states_provinces", returnclass = "sf")
+
+# Filter the shapefile for Afghanistan
+afghanistan_shp <- world_shp %>% filter(admin == "Afghanistan")
+
+# Convert shapefile to a data frame
+afghanistan_df <- st_as_sf(afghanistan_shp)
+
+# Set CRS for afghanistan_conflicts to match afghanistan_df
+st_crs(afghanistan_conflicts) <- st_crs(afghanistan_df)
+
+# Merge data with the shapefile based on admin1 column
+merged_data <- st_join(afghanistan_df, afghanistan_conflicts, join = st_intersects)
+
+# Calculate the average civilian targeting for each administrative boundary
+averages <- merged_data %>%
+  group_by(name) %>%
+  summarize(avg_civilian_targeting = mean(civilian_targeting, na.rm = TRUE))
+
+# Plot the map
+plot(afghanistan_df)
+text(afghanistan_df$geometry, labels = afghanistan_df$name, col = "black", cex = 0.8)
+
+# Add color to the administrative boundaries based on the average civilian targeting
+colormap <- colorRampPalette(c("green", "red"))(n = 10)
+color_scale <- cut(averages$avg_civilian_targeting, breaks = 10)
+legend_colors <- colormap[as.numeric(color_scale)]
+plot(merged_data, col = legend_colors, add = TRUE)
+
+# Add a legend
+legend("bottomright", legend = c("Low", "High"), fill = colormap, title = "Civilian Targeting")
+
+
+```
+
+```{r}
+
+# Get the column types
+col_types <- sapply(before_2021[,c("year","fatalities")], class)
+
+# Print the column types
+print(col_types)
+```
+
+```{r}
+# Filter the dataset for events before 2021
+before_2021 <- as.data.frame(afghanistan_conflicts) %>% mutate(civilian_targeting = ifelse(civilian_targeting == "Civilian targeting", 1, 0)) %>%
+  filter(year < 2021)
+
+# Select relevant numerical variables for correlation analysis for before 2021
+numeric_vars_before_2021 <- before_2021[, c("year",  "fatalities", "civilian_targeting")]
+
+# Calculate the correlation matrix for before 2021
+cor_matrix_before_2021 <- cor(numeric_vars_before_2021)
+
+# Plot the density of correlation values for before 2021
+cor_density_before_2021 <- as.data.frame(as.table(cor_matrix_before_2021))
+plot_cor_density_before_2021 <- ggplot(cor_density_before_2021, aes(x = Freq)) +
+  geom_density(fill = "skyblue", alpha = 0.6) +
+  labs(x = "Correlation", y = "Density") +
+  ggtitle("Density Plot of Correlation Values (Before 2021)")
+
+# Print the density plot for before 2021
+print(plot_cor_density_before_2021)
+
+# Display the correlation matrix for before 2021
+corrplot(cor_matrix_before_2021, type = "upper", method = "color", tl.col = "black")
+
+
+# Filter the dataset for events after 2021
+after_2021 <- as.data.frame(afghanistan_conflicts) %>%
+  mutate(civilian_targeting = ifelse(civilian_targeting == "Civilian targeting", 1, 0)) %>%
+  filter(year >= 2021)
+
+# Select relevant numerical variables for correlation analysis for after 2021
+numeric_vars_after_2021 <- after_2021[, c("year", "fatalities","civilian_targeting")]
+
+# Calculate the correlation matrix for after 2021
+cor_matrix_after_2021 <- cor(numeric_vars_after_2021)
+
+# Plot the density of correlation values for after 2021
+cor_density_after_2021 <- as.data.frame(as.table(cor_matrix_after_2021))
+plot_cor_density_after_2021 <- ggplot(cor_density_after_2021, aes(x = Freq)) +
+  geom_density(fill = "skyblue", alpha = 0.6) +
+  labs(x = "Correlation", y = "Density") +
+  ggtitle("Density Plot of Correlation Values (After 2021)")
+
+# Print the density plot for after 2021
+print(plot_cor_density_after_2021)
+
+# Display the correlation matrix for after 2021
+corrplot(cor_matrix_after_2021, type = "upper", method = "color", tl.col = "black")
+
+```
+
+```{r}
+# Select two numerical variables for correlation analysis for before 2021
+before_2021 <- before_2021_a_c %>% 
+  mutate(civilian_targeting = ifelse(civilian_targeting == "Civilian targeting", 1, 0))
+after_2021 <- after_2021_a_c %>% 
+  mutate(civilian_targeting = ifelse(civilian_targeting == "Civilian targeting", 1, 0))
+
+var1_before_2021 <- before_2021$civilian_targeting
+var2_before_2021 <- before_2021$fatalities
+
+# Calculate the correlation coefficient for before 2021
+correlation_before_2021 <- cor(var1_before_2021, var2_before_2021)
+
+# Create a scatter plot for before 2021
+scatter_plot_before_2021 <- ggplot(before_2021, aes(x = var1_before_2021, y = var2_before_2021)) +
+  geom_point() +
+  labs(title = "Scatter Plot (Before 2021)", x = "Civilian targeting", y = "Fatalities") +
+  geom_smooth(method = "lm", se = FALSE) +
+  annotate("text", x = max(var1_before_2021), y = max(var2_before_2021), label = paste0("Correlation: ", round(correlation_before_2021, 2)))
+
+# Display the scatter plot for before 2021
+print(scatter_plot_before_2021)
+
+
+# Select two numerical variables for correlation analysis for after 2021
+var1_after_2021 <- after_2021$civilian_targeting
+var2_after_2021 <- after_2021$fatalities
+
+# Calculate the correlation coefficient for after 2021
+correlation_after_2021 <- cor(var1_after_2021, var2_after_2021)
+
+# Create a scatter plot for after 2021
+scatter_plot_after_2021 <- ggplot(after_2021, aes(x = var1_after_2021, y = var2_after_2021)) +
+  geom_point() +
+  labs(title = "Scatter Plot (After 2021)", x = "Civilian Targeting", y = "Fatalities") +
+  geom_smooth(method = "lm", se = FALSE) +
+  annotate("text", x = max(var1_after_2021), y = max(var2_after_2021), label = paste0("Correlation: ", round(correlation_after_2021, 2)))
+
+# Display the scatter plot for after 2021
+print(scatter_plot_after_2021)
+```
+
+## Regression
+
+```{r}
+afg_cnf_s <- afghanistan_conflicts %>% mutate(civilian_targeting = ifelse(civilian_targeting == "Civilian targeting", 1, 0), year = ifelse(year >= 2021, 1, 0))
+library(spatstat)
+
+ols_res <- lm(civilian_targeting ~ year + fatalities, data = afg_cnf_s)
+modelsummary::modelsummary(ols_res, stars = TRUE, gof_omit = "IC|Log|Adj|R.squared")
+
+```
+
+```{r}
+
+```

@@ -1,0 +1,84 @@
+"0","library(sf)"
+"0","library(sp)"
+"0","library(spatstat)"
+"2","Warning: package ‘spatstat’ was built under R version 4.2.3"
+"2","Loading required package: spatstat.data
+"
+"2","Warning: package ‘spatstat.data’ was built under R version 4.2.3"
+"2","Loading required package: spatstat.geom
+"
+"2","Warning: package ‘spatstat.geom’ was built under R version 4.2.3"
+"2","spatstat.geom 3.2-1
+"
+"2","
+Attaching package: ‘spatstat.geom’
+
+"
+"2","The following objects are masked from ‘package:raster’:
+
+    area, rotate, shift
+
+"
+"2","Loading required package: spatstat.random
+"
+"2","Warning: package ‘spatstat.random’ was built under R version 4.2.3"
+"2","spatstat.random 3.1-5
+"
+"2","Loading required package: spatstat.explore
+"
+"2","Warning: package ‘spatstat.explore’ was built under R version 4.2.3"
+"2","Loading required package: nlme
+"
+"2","
+Attaching package: ‘nlme’
+
+"
+"2","The following object is masked from ‘package:dplyr’:
+
+    collapse
+
+"
+"2","The following object is masked from ‘package:raster’:
+
+    getData
+
+"
+"2","spatstat.explore 3.2-1
+"
+"2","Loading required package: spatstat.model
+"
+"2","Warning: package ‘spatstat.model’ was built under R version 4.2.3"
+"2","Loading required package: rpart
+"
+"2","spatstat.model 3.2-4
+"
+"2","Loading required package: spatstat.linnet
+"
+"2","Warning: package ‘spatstat.linnet’ was built under R version 4.2.3"
+"2","spatstat.linnet 3.1-1
+"
+"2","
+spatstat 3.0-6 
+For an introduction to spatstat, type ‘beginner’ 
+
+"
+"0","# Convert to suitable projected CRS"
+"0","afghanistan_shp <- st_transform(afghanistan_shp, ""+proj=utm +zone=42 +datum=WGS84"")"
+"0",""
+"0","# Convert to spatial points dataframe"
+"0","afghanistan_conflicts <- st_as_sf(civilian_targeting, coords = c(""longitude"", ""latitude""))"
+"0",""
+"0","# Convert to ppp object"
+"0","afghanistan_ppp <- as.ppp(afghanistan_conflicts)"
+"2","Warning: only first attribute column is used for marks"
+"0","# Define the bandwidth parameter for kernel density estimation"
+"0","bandwidth_parameter <- 0.1  "
+"0",""
+"0","# Create study window from transformed shapefile"
+"0","study_area <- as.owin(afghanistan_shp)"
+"0",""
+"0","# Perform kernel density estimation"
+"0","density_map <- density.ppp(afghanistan_ppp, sigma = bandwidth_parameter, window = study_area)"
+"0",""
+"0","# Visualize the kernel density estimation"
+"0","plot(density_map)"

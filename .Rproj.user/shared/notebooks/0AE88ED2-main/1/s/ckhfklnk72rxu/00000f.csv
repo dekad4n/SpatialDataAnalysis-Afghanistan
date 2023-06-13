@@ -1,0 +1,5 @@
+"0","edge_data <- as.data.frame(net, what = ""edges"")"
+"0","points <- edge_data$geometry"
+"0","points"
+"1","NULL
+"

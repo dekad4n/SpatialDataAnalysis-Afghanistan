@@ -1,0 +1,26 @@
+"0","library(ggraph)"
+"2","Warning: package ‘ggraph’ was built under R version 4.2.3"
+"2","Loading required package: ggplot2
+"
+"2","
+Attaching package: ‘ggraph’
+
+"
+"2","The following object is masked from ‘package:spatstat.geom’:
+
+    square
+
+"
+"2","The following object is masked from ‘package:sp’:
+
+    geometry
+
+"
+"0","# Create a ggraph plot"
+"0","g <- ggraph(net, layout = ""fr"") +"
+"0","  geom_edge_link() +"
+"0","  geom_node_point() +"
+"0","  theme_void()"
+"0",""
+"0","# Plot the network"
+"0","plot(g)"

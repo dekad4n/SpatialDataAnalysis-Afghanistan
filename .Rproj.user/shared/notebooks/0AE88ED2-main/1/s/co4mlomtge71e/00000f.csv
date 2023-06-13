@@ -1,0 +1,21 @@
+"0","library(dplyr) # requires dplyr library installation"
+"2","
+Attaching package: ‘dplyr’
+
+"
+"2","The following objects are masked from ‘package:raster’:
+
+    intersect, select, union
+
+"
+"2","The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+"
+"2","The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+"
+"0","afghanistan_conflicts %>% select(matches(""event*""))"

@@ -1,0 +1,10 @@
+"0","# Download the shapefile for all countries"
+"0","world_shp <- ne_download(scale = ""large"", type = ""admin_1_states_provinces"", returnclass = ""sf"")"
+"2","trying URL 'https://naturalearth.s3.amazonaws.com/10m_cultural/ne_10m_admin_1_states_provinces.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 14909524 bytes (14.2 MB)
+"
+"2","downloaded 14.2 MB
+
+"

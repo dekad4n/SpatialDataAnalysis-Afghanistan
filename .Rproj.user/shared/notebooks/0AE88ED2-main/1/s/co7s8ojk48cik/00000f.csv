@@ -1,0 +1,3 @@
+"0","civilian_targeting <- afghanistan_conflicts %>% filter(civilian_targeting != """")"
+"0",""
+"0","civilian_targeting %>% summarize(count = n(), mean_fatalities = mean(fatalities))"

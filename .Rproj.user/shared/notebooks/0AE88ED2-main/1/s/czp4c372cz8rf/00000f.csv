@@ -1,0 +1,7 @@
+"0","# load sfnetworks package"
+"0","library(sfnetworks)"
+"0",""
+"0","# create a network object"
+"0","net <- as_sfnetwork(edge_list, directed = FALSE)"
+"2","Error: Geometries are not all of type LINESTRING, or all of type POINT
+"

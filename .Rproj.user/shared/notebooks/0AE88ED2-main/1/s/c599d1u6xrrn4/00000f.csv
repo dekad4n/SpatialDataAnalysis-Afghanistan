@@ -1,0 +1,4 @@
+"0","before_2021 %>% summarize(avg_fatalities = mean(fatalities), max_fatality = max(fatalities), min_fatality = min(fatalities), standard_dev_fatalities= sd(fatalities), quantile(fatalities, probs=c(0.25, 0.50, 0.75, 0.9)))"
+"2","Warning: Returning more (or less) than 1 row per `summarise()` group was deprecated in dplyr 1.1.0.
+Please use `reframe()` instead.
+When switching from `summarise()` to `reframe()`, remember that `reframe()` always returns an ungrouped data frame and adjust accordingly."

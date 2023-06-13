@@ -1,0 +1,2 @@
+"0","edge_data <- as.data.frame(net, what = ""edges"")"
+"0","edge_data"

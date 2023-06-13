@@ -1,0 +1,6 @@
+"0",""
+"0","# Download the shapefile for all countries"
+"0","world_shp <- ne_download(scale = ""large"", type = ""admin_1_states_provinces"", returnclass = ""sf"")"
+"2","Error in ne_download(scale = ""large"", type = ""admin_1_states_provinces"",  : 
+  could not find function ""ne_download""
+"

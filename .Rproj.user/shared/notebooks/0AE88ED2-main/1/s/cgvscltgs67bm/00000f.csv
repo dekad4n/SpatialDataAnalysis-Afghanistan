@@ -1,0 +1,9 @@
+"0","afg_cnf_s <- afghanistan_conflicts %>% mutate(civilian_targeting = ifelse(civilian_targeting == ""Civilian targeting"", 1, 0), year = ifelse(year >= 2021, 1, 0))"
+"0","library(spdep)"
+"0","library(sf)"
+"0",""
+"0","# convert data frame to a spatial points data frame"
+"0","coordinates(afg_cnf_s) <- ~longitude+latitude"
+"2","Error in (function (classes, fdef, mtable)  : 
+  unable to find an inherited method for function ‘coordinates<-’ for signature ‘""sf""’
+"

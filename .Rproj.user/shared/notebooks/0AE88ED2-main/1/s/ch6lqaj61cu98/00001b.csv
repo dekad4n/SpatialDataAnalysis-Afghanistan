@@ -1,0 +1,2 @@
+"0","afghanistan_conflicts <- read.csv(here(""data"", ""afghanistan.csv""))"
+"0","afghanistan_conflicts"

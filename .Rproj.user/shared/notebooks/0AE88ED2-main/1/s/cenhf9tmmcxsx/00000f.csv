@@ -1,0 +1,1 @@
+"0","event_subtype_gby %>% summarize(count = n(), avg_fatality = mean(fatalities)) %>% filter(count > 1) %>% arrange(desc(avg_fatality))"

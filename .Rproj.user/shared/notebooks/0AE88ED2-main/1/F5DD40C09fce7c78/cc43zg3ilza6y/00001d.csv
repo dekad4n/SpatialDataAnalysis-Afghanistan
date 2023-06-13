@@ -1,0 +1,17 @@
+"0","event_subtype_gby_a <- after_2021 %>% group_by(	"
+"0","sub_event_type)"
+"0","event_subtype_gby_sm <- summarise_col_value(event_subtype_gby_a)"
+"0","event_subtype_gby_sm"
+"1","Simple feature collection with 10 features and 3 fields"
+"1","
+"
+"1","Geometry type: GEOMETRY
+"
+"1","Dimension:     XY
+"
+"1","Bounding box:  "
+"1","xmin: 61.0667 ymin: 30.1833 xmax: 71.582 ymax: 38.4435"
+"1","
+"
+"1","CRS:           NA
+"

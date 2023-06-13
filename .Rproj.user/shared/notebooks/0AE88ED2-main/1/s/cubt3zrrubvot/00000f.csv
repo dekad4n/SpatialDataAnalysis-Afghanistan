@@ -1,0 +1,8 @@
+"0","# Assume your data is in afghanistan_conflicts, and it has longitude and latitude columns"
+"0","after_2021_q <- after_2021 %>%"
+"0","  group_by(longitude, latitude) %>%"
+"0","  summarise(count = n(), .groups = 'drop') %>%"
+"0","  st_as_sf()"
+"2","Error in st_sf(x, ..., agr = agr, sf_column_name = sf_column_name) : 
+  no simple features geometry column present
+"

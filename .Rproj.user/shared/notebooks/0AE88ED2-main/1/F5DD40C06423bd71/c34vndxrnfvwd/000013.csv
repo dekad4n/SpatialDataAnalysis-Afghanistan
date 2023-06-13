@@ -1,0 +1,3 @@
+"0","event_type_gby <- afghanistan_conflicts %>% group_by(event_type)"
+"0","event_type_gby_sm <- summarise_col_value(event_type_gby)"
+"0","event_type_gby_sm"

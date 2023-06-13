@@ -1,0 +1,1 @@
+"0","gby_act_1 %>% summarize(count = n(),avg_fatality = mean(fatalities)) %>% filter(count>1) %>% arrange(desc(avg_fatality))"

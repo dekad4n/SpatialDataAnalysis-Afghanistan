@@ -1,0 +1,5 @@
+"0","summarise_col_value <- function(grouped_df)"
+"0","{"
+"0","  conf_gby_col <- grouped_df %>% summarize(count=n()) %>% mutate(percentage = count/ sum(count) * 100) %>% arrange(desc(percentage))"
+"0","  return(conf_gby_col)"
+"0","}"
